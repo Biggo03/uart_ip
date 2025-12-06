@@ -4,6 +4,8 @@ outpus/
 *.vvp
 *.log
 *.out
+# dotfiles
+.*
 
 __pycache__/
 
