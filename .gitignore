@@ -1,0 +1,9 @@
+# Simulation outputs
+outpus/
+*.vcd
+*.vvp
+*.log
+*.out
+
+__pycache__/
+
