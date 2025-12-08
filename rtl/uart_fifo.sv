@@ -16,8 +16,10 @@ module uart_fifo #(
     input  wire             ren_i,
     output reg [WIDTH-1:0]  rdata_o,
 
-    output reg [ADDR_W:0]   lvl_o, // Needs to be able to reach DEPTH, not DEPTH-1
+    input wire              clr_ovrn_i,
     output reg              ovrn_o,
+
+    output reg [ADDR_W:0]   lvl_o, // Needs to be able to reach DEPTH, not DEPTH-1
     output reg              valid_o,
 
     output wire             almost_empty_o,
@@ -43,17 +45,15 @@ module uart_fifo #(
                 fifo_data_r[i] <= 0;
             end
         end else begin
+            // write logic
             if (wen_i && ~full_o) begin : write_logic
-                ovrn_o <= 1'b0;
-
                 fifo_data_r[write_ptr_r] <= wdata_i;
 
                 if (write_ptr_r == DEPTH-1) write_ptr_r <= 0;
                 else                        write_ptr_r <= write_ptr_r + 1;
-            end else if (full_o) begin
-                ovrn_o <= 1'b1;
             end
 
+            // read logic
             if (ren_i && ~empty_o) begin : read_logic
                 rdata_o <= fifo_data_r[read_ptr_r];
                 valid_o <= 1'b1;
@@ -64,13 +64,16 @@ module uart_fifo #(
                 valid_o <= 1'b0;
             end
 
-            begin : level_logic
-                casez ({wen_i && ~full_o, ren_i && ~empty_o})
-                    2'b10: lvl_o <= lvl_o + 1;
-                    2'b01: lvl_o <= lvl_o - 1;
-                    default:;
-                endcase
-            end
+            // overrun logic
+            if (wen_i && full_o) ovrn_o <= 1'b1;
+            else if (clr_ovrn_i) ovrn_o <= 1'b0;
+
+            // level logic
+            casez ({wen_i && ~full_o, ren_i && ~empty_o})
+                2'b10: lvl_o <= lvl_o + 1;
+                2'b01: lvl_o <= lvl_o - 1;
+                default:;
+            endcase
         end
     end
 

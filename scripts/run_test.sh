@@ -37,11 +37,16 @@ WAV_OUT="$OUTDIR/sim.vcd"
 
 export PROJ_ROOT=$(realpath ../)
 
+INC_DIRS="-I $PROJ_ROOT/tb"
+for dir in $PROJ_ROOT/tb/*/; do
+    INC_DIRS="$INC_DIRS -I $dir"
+    echo $INC_DIRS
+done
 # ----------------------------
 # Compile
 # ----------------------------
 echo "[INFO] Compiling..."
-iverilog -g2012 -o "$VVP_OUT" -D WAVE_PATH=\"$WAV_OUT\" -I $PROJ_ROOT/tb "$TB_NAME" -f "$FILELIST"
+iverilog -g2012 -o "$VVP_OUT" -D WAVE_PATH=\"$WAV_OUT\" $INC_DIRS -I $PROJ_ROOT/tb/* "$TB_NAME" -f "$FILELIST"
 
 # ----------------------------
 # Run
