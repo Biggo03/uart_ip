@@ -16,13 +16,15 @@ set -e
 # Argument parsing
 # ----------------------------
 if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <filelist> <tb_name> <outdir>"
+    echo "Usage: $0 <filelist> <tb_file> <outdir>"
     exit 1
 fi
 
 FILELIST="$(realpath $1)"
-TB_NAME="$(realpath $2)"
+TB_PATH="$(realpath $2)"
 OUTDIR="$3"
+
+TB_DIR="$(dirname $TB_PATH)"
 
 mkdir -p "$OUTDIR"
 
@@ -37,16 +39,12 @@ WAV_OUT="$OUTDIR/sim.vcd"
 
 export PROJ_ROOT=$(realpath ../)
 
-INC_DIRS="-I $PROJ_ROOT/tb"
-for dir in $PROJ_ROOT/tb/*/; do
-    INC_DIRS="$INC_DIRS -I $dir"
-    echo $INC_DIRS
-done
+INC_DIRS="-I $PROJ_ROOT/tb -I $TB_DIR"
 # ----------------------------
 # Compile
 # ----------------------------
 echo "[INFO] Compiling..."
-iverilog -g2012 -o "$VVP_OUT" -D WAVE_PATH=\"$WAV_OUT\" $INC_DIRS -I $PROJ_ROOT/tb/* "$TB_NAME" -f "$FILELIST"
+iverilog -g2012 -o "$VVP_OUT" -D WAVE_PATH=\"$WAV_OUT\" $INC_DIRS "$TB_PATH" -f "$FILELIST"
 
 # ----------------------------
 # Run
