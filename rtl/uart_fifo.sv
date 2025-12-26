@@ -1,6 +1,5 @@
 `timescale 1ns/1ps
 
-
 module uart_fifo #(
     parameter int WIDTH = 8,
     parameter int DEPTH = 16,
