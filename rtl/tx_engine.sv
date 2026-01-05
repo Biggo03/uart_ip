@@ -40,7 +40,7 @@ module tx_engine #(
     reg [3:0] transmit_cntr_r;
 
     // baud counter signals
-    reg                   baud_tick_r;
+    reg       baud_tick_r;
 
     always_ff @(posedge clk_i) begin : tx_fsm
         if (reset_i) begin
@@ -118,7 +118,9 @@ module tx_engine #(
         end
     end
 
-    baud_from_osr u_baud_from_osr (
+    baud_from_osr #(
+        .OSR            (OSR)
+    ) u_baud_from_osr (
         .clk_i          (clk_i),
         .reset_i        (reset_i),
 

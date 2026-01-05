@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 `include "common.sv"
 
-module tb_tx_engine;
+module tx_engine_tb;
 
     // ------------------------------------------------------------------
     // Parameters

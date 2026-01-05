@@ -14,7 +14,7 @@ The UART will evolve through incremental versions to maintain clarity and correc
 
 ---
 
-## 2. Design Philosophy
+## 2. Design Outline
 
 ### Layered Architecture:
 1. **UART Core**:
@@ -31,11 +31,10 @@ The UART will evolve through incremental versions to maintain clarity and correc
 ### Single Clock Domain
 - Baud ticks generated internally using counters
 - RX input treated as asynchronous and synchronized
-- No multi-clock complexity (yet)
 
 ### Seperation of Concerns
 - IP core handles protocol/state-machine behaviour
-- Register block handles CPU-visible access patterns, control bits, FIFO'sm and interrupt conditions
+- Register block handles CPU-visible access patterns, control bits, FIFO's and interrupt conditions
 
 ### Documentation
 - Clear descriptions of functions, register map, FSMs, timing, and configuration mechanisms
@@ -64,7 +63,7 @@ Goal: Implement a stable, functional UART suitable for printf, serial output, an
 #### Baud Generation
 - Integer baud divisor
 - Single clock input (`clk`)
-- Baud tick signal for TX/RX FSMs
+- OSR tick signal for TX/RX FSMs
 
 #### FIFOs
 - Generic and configurable
