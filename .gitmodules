@@ -1,0 +1,3 @@
+[submodule "tools/Peripheral-Register-File-Generator"]
+	path = tools/Peripheral-Register-File-Generator
+	url = https://github.com/Biggo03/Peripheral-Register-File-Generator.git

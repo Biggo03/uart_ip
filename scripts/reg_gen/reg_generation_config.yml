@@ -1,0 +1,17 @@
+peripheral_name: "UART"
+
+spreadsheet_path: "../../docs/reg_map.xlsx"
+
+rtl_output_dir: "../../rtl/generated"
+
+tb_output_dir: "../../tb/generated"
+
+package_output_dir: "../../rtl/generated"
+
+macro_output_dir: "../../rtl/generated"
+
+cdef_output_dir: "../../includes"
+
+script_output_dir: "../../scripts"
+
+sim_output_dir: "../../sim_outputs"

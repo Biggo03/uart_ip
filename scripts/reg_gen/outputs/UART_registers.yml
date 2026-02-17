@@ -1,0 +1,120 @@
+GROUPS:
+  CONFIG:
+    ACCESS: RW
+    DESCRIPTION: Conifguration settings for UART
+  STATUS:
+    ACCESS: R
+    DESCRIPTION: Status registers for the UART
+REGISTERS:
+  CONFIG:
+    UART_CFG:
+      FIELDS:
+        TX_EN:
+          WIDTH: 1
+          ACCESS: RW
+          BITS: '[0]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: Enable TX Engine
+        TX_CLR_OVRN:
+          WIDTH: 1
+          ACCESS: RW
+          BITS: '[1]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: Clear the TX FIFO overrun flag
+        RX_EN:
+          WIDTH: 1
+          ACCESS: RW
+          BITS: '[2]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: Enable RX Engine
+        RX_CLR_OVRN:
+          WIDTH: 1
+          ACCESS: RW
+          BITS: '[3]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: Clear the RX FIFO overrun flag
+      REG_DESCRIPTION: Registers for controlling behaviour of the UART
+      ADDR_OFFSET: '0x0'
+      ADDR_MACRO: UART_UART_CFG_ADDR
+    TX_DATA:
+      FIELDS:
+        TX_DATA:
+          WIDTH: 8
+          ACCESS: RW
+          BITS: '[7:0]'
+          RESET_VAL: '0x00'
+          FIELD_DESCRIPTION: Write byte to TX FIFO
+      REG_DESCRIPTION: TX data register
+      ADDR_OFFSET: '0x8'
+      ADDR_MACRO: UART_TX_DATA_ADDR
+    BAUD_CFG:
+      FIELDS:
+        BAUDDIV:
+          WIDTH: 16
+          ACCESS: R/W
+          BITS: '[15:0]'
+          RESET_VAL: user
+          FIELD_DESCRIPTION: Integer divisor
+      REG_DESCRIPTION: Baud configuration register
+      ADDR_OFFSET: '0x10'
+      ADDR_MACRO: UART_BAUD_CFG_ADDR
+  STATUS:
+    UART_STATUS:
+      FIELDS:
+        RX_VALID:
+          WIDTH: 1
+          ACCESS: R
+          BITS: '[0]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: RX FIFO not empty
+        RX_OVRN:
+          WIDTH: 1
+          ACCESS: R
+          BITS: '[1]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: RX FIFO overrun
+        RX_LVL:
+          WIDTH: 4
+          ACCESS: R
+          BITS: '[5:2]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: RX FIFO occupancy
+        RX_BUSY:
+          WIDTH: 1
+          ACCESS: R
+          BITS: '[6]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: RX engine active
+        TX_OVRN:
+          WIDTH: 1
+          ACCESS: R
+          BITS: '[7]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: TX FIFO overrun
+        TX_LVL:
+          WIDTH: 4
+          ACCESS: R
+          BITS: '[11:8]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: TX FIFO occupancy
+        TX_BUSY:
+          WIDTH: 1
+          ACCESS: R
+          BITS: '[12]'
+          RESET_VAL: '0x0'
+          FIELD_DESCRIPTION: TX engine active
+      REG_DESCRIPTION: "Registers with info on FIFO\u2019s and TX/RX activity"
+      ADDR_OFFSET: '0x4'
+      ADDR_MACRO: UART_UART_STATUS_ADDR
+    RX_DATA:
+      FIELDS:
+        RX_DATA:
+          WIDTH: 8
+          ACCESS: R
+          BITS: '[7:0]'
+          RESET_VAL: '0x00'
+          FIELD_DESCRIPTION: Read byte from RX FIFO
+      REG_DESCRIPTION: RX data register
+      ADDR_OFFSET: '0xC'
+      ADDR_MACRO: UART_RX_DATA_ADDR
+  ADDR_WIDTH: 5
