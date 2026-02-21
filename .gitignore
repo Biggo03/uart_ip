@@ -1,11 +1,13 @@
 # Simulation outputs
-outpus/
+outputs/
 *.vcd
 *.vvp
 *.log
 *.out
 # dotfiles
 .*
+# regfile artifacts
+scripts/reg_gen/outputs
 
 __pycache__/
 
