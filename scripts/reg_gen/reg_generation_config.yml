@@ -1,4 +1,4 @@
-peripheral_name: "UART"
+peripheral_name: "uart"
 
 spreadsheet_path: "../../docs/reg_map.xlsx"
 
@@ -12,6 +12,6 @@ macro_output_dir: "../../rtl/generated"
 
 cdef_output_dir: "../../includes"
 
-script_output_dir: "../../scripts"
+script_output_dir: "../../scripts/reg_gen"
 
 sim_output_dir: "../../sim_outputs"
