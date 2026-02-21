@@ -4,7 +4,7 @@ module uart_fifo #(
     parameter int WIDTH = 8,
     parameter int DEPTH = 16,
 
-    localparam int ADDR_W = $clog2(DEPTH)
+    localparam int ADDR_W = $clog2(DEPTH-1)
 ) (
     input  wire             clk_i,
     input  wire             reset_i,

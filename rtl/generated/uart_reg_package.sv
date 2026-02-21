@@ -17,15 +17,15 @@ package uart_reg_pkg;
         reg        TX_CLR_OVRN; // Clear the TX FIFO overrun flag
         reg        RX_EN; // Enable RX Engine
         reg        RX_CLR_OVRN; // Clear the RX FIFO overrun flag
-    
+
         // TX_DATA
         // TX data register
         reg [7:0]  TX_DATA; // Write byte to TX FIFO
-    
+
         // BAUD_CFG
         // Baud configuration register
         reg [15:0]  BAUDDIV; // Integer divisor
-    
+
     } config_reg_t;
 
     typedef struct packed {
@@ -38,11 +38,11 @@ package uart_reg_pkg;
         reg        TX_OVRN; // TX FIFO overrun
         reg [3:0]  TX_LVL; // TX FIFO occupancy
         reg        TX_BUSY; // TX engine active
-    
+
         // RX_DATA
         // RX data register
         reg [7:0]  RX_DATA; // Read byte from RX FIFO
-    
+
     } status_reg_t;
 
 endpackage
