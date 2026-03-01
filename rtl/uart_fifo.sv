@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       uart_fifo
+//  File:         uart_fifo.sv
+//  Description:  Generic synchronous FIFO with status flags.
+//
+//                 Key behaviors:
+//                   - Supports independent read/write with level tracking
+//                   - Provides empty/full and almost-empty/full flags
+//                   - Tracks overrun when writes occur while full
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   WIDTH, DEPTH, ADDR_W
+//
+//  Notes:        - ADDR_W uses $clog2(DEPTH-1); lvl_o is sized to reach DEPTH.
+//==============================================================//
 `timescale 1ns/1ps
 
 module uart_fifo #(

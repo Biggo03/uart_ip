@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       tx_engine
+//  File:         tx_engine.sv
+//  Description:  UART transmit engine (8N1).
+//
+//                 Key behaviors:
+//                   - Pulls bytes from TX FIFO and serializes data
+//                   - Generates start, data, and stop bits on baud ticks
+//                   - Reports busy status and FIFO read handshake
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR
+//
+//  Notes:        
+//==============================================================//
 `timescale 1ns/1ps
 
 module tx_engine #(

@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       uart_fifo_tb
+//  File:         uart_fifo_tb.sv
+//  Description:  Testbench for uart_fifo.
+//
+//                 This testbench verifies:
+//                   - FIFO write/read ordering and valid behavior
+//                   - Level tracking and flag correctness
+//                   - Overrun detection and clear behavior
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   WIDTH, DEPTH, ADDR_W
+//
+//  Notes:        - Uses common.sv dump_setup for VCD generation.
+//==============================================================//
 `timescale 1ns/1ps
 `include "common.sv"
 
@@ -164,4 +182,3 @@ module uart_fifo_tb;
     `include "uart_fifo_tb_tasks.sv"
 
 endmodule
-

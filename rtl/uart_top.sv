@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       uart_top
+//  File:         uart_top.sv
+//  Description:  Top-level UART integration with regfile and FIFOs.
+//
+//                 Key behaviors:
+//                   - Wires register interface to TX/RX engines and FIFOs
+//                   - Generates osr_tick via baud_gen from BAUDDIV
+//                   - Exposes TX/RX status and data through regfile
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   None
+//
+//  Notes:
+//==============================================================//
 `timescale 1ns/1ps
 `include "uart_reg_macros.sv"
 import uart_reg_pkg::*;
@@ -26,8 +44,6 @@ module uart_top (
 
     // Baud generator
     wire         osr_tick;
-    wire [15:0]  baud_div_i;
-    wire         baud_div_we;
 
     // RX FIFO signals
     wire [7:0]   rx_fifo_wdata;
@@ -69,15 +85,11 @@ module uart_top (
 //          BAUD           //
 /////////////////////////////
 
-    assign baud_div_we = reg_we_i && (reg_waddr_i == `UART_BAUD_CFG_ADDR);
-    assign baud_div_i  = baud_div_we ? reg_wdata_i[15:0] : config_grp.BAUDDIV;
-
     baud_gen u_baud_gen (
         .clk_i      (clk_i),
         .reset_i    (reset_i),
         .en_i       (config_grp.TX_EN || config_grp.RX_EN),
-        .div_i      (baud_div_i),
-        .div_we_i   (baud_div_we),
+        .div_i      (config_grp.BAUDDIV),
         .osr_tick_o (osr_tick)
     );
 
@@ -93,7 +105,7 @@ module uart_top (
         .osr_tick_i     (osr_tick),
         .rx_fifo_data_o (rx_fifo_wdata),
         .rx_fifo_wen_o  (rx_fifo_wen),
-        .recieve_bit_i  (rx_i),
+        .recieve_bit_i  (rx_data_i),
         .rx_en_i        (config_grp.RX_EN),
         .rx_busy_o      (status_grp.RX_BUSY)
     );
@@ -136,7 +148,7 @@ module uart_top (
         .tx_fifo_ren_o   (tx_fifo_ren),
         .tx_en_i         (config_grp.TX_EN),
         .tx_busy_o       (status_grp.TX_BUSY),
-        .transmit_bit_o  (tx_o)
+        .transmit_bit_o  (tx_data_o)
     );
 
     uart_fifo #(

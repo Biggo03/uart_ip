@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       baud_from_osr
+//  File:         baud_from_osr.sv
+//  Description:  Baud tick generator derived from OSR tick input.
+//
+//                 Key behaviors:
+//                   - Counts OSR ticks and asserts baud_tick_o at OSR-1
+//                   - Resets counter and tick on reset or when disabled
+//                   - Exposes OSR counter value for sampling alignment
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR
+//
+//  Notes:        
+//==============================================================//
 module baud_from_osr #(
     parameter int OSR = 16
 ) (

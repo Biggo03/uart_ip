@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       baud_gen_tb
+//  File:         baud_gen_tb.sv
+//  Description:  Testbench for baud_gen.
+//
+//                 This testbench verifies:
+//                   - Tick generation when enabled at the divisor rate
+//                   - No tick while disabled or after div_i changes
+//                   - Reset behavior of the divider and tick output
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR, DIV_W
+//
+//  Notes:        - Uses common.sv dump_setup for VCD generation.
+//==============================================================//
 `timescale 1ns/1ps
 `include "common.sv"
 
@@ -16,7 +34,6 @@ module baud_gen_tb;
     logic             reset_i;
     logic             en_i;
     logic [DIV_W-1:0] div_i;
-    logic             div_we_i;
     logic             osr_tick_o;
 
     // --------------------------------------------------
@@ -30,7 +47,6 @@ module baud_gen_tb;
         .reset_i    (reset_i),
         .en_i       (en_i),
         .div_i      (div_i),
-        .div_we_i   (div_we_i),
         .osr_tick_o (osr_tick_o)
     );
 
@@ -48,7 +64,6 @@ module baud_gen_tb;
         $display("beginning test");
         en_i = 1'b0;
         div_i = 1'b0;
-        div_we_i = 1'b0;
         reset_i = 1'b1;
         repeat(2)@(posedge clk_i);
         reset_i = 1'b0;
@@ -64,11 +79,9 @@ task automatic full_test(
     input int repetitions
 );
 begin
-    div_i    = div;
-    div_we_i = 1'b1;
+    div_i = div;
     @(posedge clk_i);
     #1;
-    div_we_i = 1'b0;
 
     repeat(div)@(posedge clk_i);
     #1;
@@ -91,10 +104,10 @@ begin
 
     en_i = 1'b1;
     repeat(div-1)@(posedge clk_i);
-    div_we_i = 1'b1;
+    div_i = div + 1;
     @(posedge clk_i);
     #1;
-    assert (osr_tick_o == 1'b0) else $error("[%0t] tick high on div_we_i transition", $realtime());
+    assert (osr_tick_o == 1'b0) else $error("[%0t] tick high on div_i change", $realtime());
 
     reset_i = 1'b1;
     @(posedge clk_i);

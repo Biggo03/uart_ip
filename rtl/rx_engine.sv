@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       rx_engine
+//  File:         rx_engine.sv
+//  Description:  UART receive engine with oversampling.
+//
+//                 Key behaviors:
+//                   - Detects start bit and samples data at OSR midpoints
+//                   - Performs majority vote and assembles received byte
+//                   - Validates stop bit and asserts FIFO write enable
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR
+//
+//  Notes:        
+//==============================================================//
 `timescale 1ns/1ps
 
 module rx_engine #(

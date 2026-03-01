@@ -39,7 +39,7 @@ WAV_OUT="$OUTDIR/sim.vcd"
 
 export PROJ_ROOT=$(realpath ../)
 
-INC_DIRS="-I $PROJ_ROOT/tb -I $TB_DIR"
+INC_DIRS="-I $PROJ_ROOT/tb -I $TB_DIR -I $PROJ_ROOT/rtl/generated"
 # ----------------------------
 # Compile
 # ----------------------------

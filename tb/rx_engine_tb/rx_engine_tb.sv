@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       rx_engine_tb
+//  File:         rx_engine_tb.sv
+//  Description:  Testbench for rx_engine.
+//
+//                 This testbench verifies:
+//                   - Start-bit detection and false-start rejection
+//                   - Data sampling and bit assembly across OSR ticks
+//                   - Stop-bit validation and FIFO write enable
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR
+//
+//  Notes:        - Uses common.sv dump_setup for VCD generation.
+//==============================================================//
 `timescale 1ns/1ps
 `include "common.sv"
 

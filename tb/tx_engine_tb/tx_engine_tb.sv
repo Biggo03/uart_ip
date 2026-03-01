@@ -1,3 +1,21 @@
+//==============================================================//
+//  Module:       tx_engine_tb
+//  File:         tx_engine_tb.sv
+//  Description:  Testbench for tx_engine.
+//
+//                 This testbench verifies:
+//                   - TX FSM transitions and FIFO handshake
+//                   - Start/data/stop bit sequencing
+//                   - Baud-tick gated shifting at OSR boundaries
+//
+//  Author:       Viggo Wozniak
+//  Project:      uart_ip
+//  Repository:   https://github.com/Biggo03/uart_ip
+//
+//  Parameters:   OSR
+//
+//  Notes:        - Uses common.sv dump_setup for VCD generation.
+//==============================================================//
 `timescale 1ns/1ps
 `include "common.sv"
 
