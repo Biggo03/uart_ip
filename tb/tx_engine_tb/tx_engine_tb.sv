@@ -46,7 +46,6 @@ module tx_engine_tb;
     // ------------------------------------------------------------------
     // FIFO interface
     // ------------------------------------------------------------------
-    logic        tx_fifo_empty_i;
     logic        tx_fifo_valid_i;
     logic [7:0]  tx_fifo_data_i;
     logic        tx_fifo_ren_o;
@@ -71,7 +70,6 @@ module tx_engine_tb;
         .clk_i             (clk_i),
         .reset_i           (reset_i),
         .osr_tick_i        (osr_tick_i),
-        .tx_fifo_empty_i   (tx_fifo_empty_i),
         .tx_fifo_valid_i   (tx_fifo_valid_i),
         .tx_fifo_data_i    (tx_fifo_data_i),
         .tx_fifo_ren_o     (tx_fifo_ren_o),
@@ -107,7 +105,6 @@ module tx_engine_tb;
         baud_cntr = 0;
         // Default values
         reset_i           = 1'b1;
-        tx_fifo_empty_i   = 1'b1;
         tx_fifo_valid_i   = 1'b0;
         tx_fifo_data_i    = '0;
         tx_en_i           = 1'b0;
@@ -137,11 +134,10 @@ begin
     #1;
     assert (~tx_busy_o) else tb_error($sformatf("[%t] busy asserted in IDLE", $realtime()));
 
-    tx_fifo_empty_i = 1'b0;
+    tx_fifo_valid_i = 1'b1;
     @(posedge clk_i);
     #1;
     assert(tx_busy_o && tx_fifo_ren_o) else tb_error($sformatf("[%t] transition to FETCH failed", $realtime()));
-    tx_fifo_valid_i = 1'b1;
 
     @(posedge clk_i);
     #1;
@@ -166,7 +162,7 @@ begin
 
     wait(~tx_busy_o);
 
-    tx_fifo_empty_i = 1'b1;
+    tx_fifo_valid_i = 1'b0;
 end
 endtask;
 

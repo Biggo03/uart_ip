@@ -40,27 +40,10 @@ module uart_top (
 
     // Register groups
     config_reg_t config_grp;
-    status_reg_t status_grp;
+    wire status_reg_t status_grp;
 
     // Baud generator
     wire         osr_tick;
-
-    // RX FIFO signals
-    wire [7:0]   rx_fifo_wdata;
-    wire         rx_fifo_wen;
-    wire         rx_fifo_ren;
-    wire [7:0]   rx_fifo_rdata;
-    wire         rx_fifo_empty;
-    wire         rx_fifo_full;
-
-    // TX FIFO signals
-    wire [7:0]   tx_fifo_wdata;
-    wire         tx_fifo_wen;
-    wire         tx_fifo_ren;
-    wire [7:0]   tx_fifo_rdata;
-    wire         tx_fifo_valid;
-    wire         tx_fifo_empty;
-    wire         tx_fifo_full;
 
     uart_regfile u_uart_regfile (
         // clock and reset
@@ -97,79 +80,38 @@ module uart_top (
 //            RX           //
 /////////////////////////////
 
-    assign rx_fifo_ren  = (reg_raddr_i == `UART_RX_DATA_ADDR);
-
-    rx_engine u_rx_engine (
-        .clk_i          (clk_i),
-        .reset_i        (reset_i),
-        .osr_tick_i     (osr_tick),
-        .rx_fifo_data_o (rx_fifo_wdata),
-        .rx_fifo_wen_o  (rx_fifo_wen),
-        .recieve_bit_i  (rx_data_i),
-        .rx_en_i        (config_grp.RX_EN),
-        .rx_busy_o      (status_grp.RX_BUSY)
-    );
-
-    uart_fifo #(
-        .WIDTH  (8),
-        .DEPTH  (16),
-        .ADDR_W (4)
-    ) u_rx_fifo (
-        .clk_i           (clk_i),
-        .reset_i         (reset_i),
-        .wdata_i         (rx_fifo_wdata),
-        .wen_i           (rx_fifo_wen),
-        .ren_i           (rx_fifo_ren),
-        .rdata_o         (status_grp.RX_DATA),
-        .clr_ovrn_i      (config_grp.RX_CLR_OVRN),
-        .ovrn_o          (status_grp.RX_OVRN),
-        .lvl_o           (status_grp.RX_LVL),
-        .valid_o         (status_grp.RX_VALID),
-        .almost_empty_o  (),
-        .empty_o         (rx_fifo_empty),
-        .almost_full_o   (),
-        .full_o          (rx_fifo_full)
+    uart_rx u_uart_rx (
+        .clk_i       (clk_i),
+        .reset_i     (reset_i),
+        .osr_tick_i  (osr_tick),
+        .rx_data_i   (rx_data_i),
+        .rx_en_i     (config_grp.RX_EN),
+        .rx_clr_ovrn_i(config_grp.RX_CLR_OVRN),
+        .reg_raddr_i (reg_raddr_i),
+        .rx_busy_o   (status_grp.RX_BUSY),
+        .rx_ovrn_o   (status_grp.RX_OVRN),
+        .rx_lvl_o    (status_grp.RX_LVL),
+        .rx_valid_o  (status_grp.RX_VALID),
+        .rx_data_o   (status_grp.RX_DATA)
     );
 
 /////////////////////////////
 //            TX           //
 /////////////////////////////
 
-    assign tx_fifo_wen  = reg_we_i && (reg_waddr_i == `UART_TX_DATA_ADDR);
-    assign tx_fifo_wdata = reg_wdata_i[7:0];
-
-    tx_engine u_tx_engine (
-        .clk_i           (clk_i),
-        .reset_i         (reset_i),
-        .osr_tick_i      (osr_tick),
-        .tx_fifo_empty_i (tx_fifo_empty),
-        .tx_fifo_valid_i (tx_fifo_valid),
-        .tx_fifo_data_i  (tx_fifo_rdata),
-        .tx_fifo_ren_o   (tx_fifo_ren),
-        .tx_en_i         (config_grp.TX_EN),
-        .tx_busy_o       (status_grp.TX_BUSY),
-        .transmit_bit_o  (tx_data_o)
-    );
-
-    uart_fifo #(
-        .WIDTH  (8),
-        .DEPTH  (16),
-        .ADDR_W (4)
-    ) u_tx_fifo (
-        .clk_i           (clk_i),
-        .reset_i         (reset_i),
-        .wdata_i         (tx_fifo_wdata),
-        .wen_i           (tx_fifo_wen),
-        .ren_i           (tx_fifo_ren),
-        .rdata_o         (tx_fifo_rdata),
-        .clr_ovrn_i      (config_grp.TX_CLR_OVRN),
-        .ovrn_o          (status_grp.TX_OVRN),
-        .lvl_o           (status_grp.TX_LVL),
-        .valid_o         (tx_fifo_valid),
-        .almost_empty_o  (),
-        .empty_o         (tx_fifo_empty),
-        .almost_full_o   (),
-        .full_o          (tx_fifo_full)
+    uart_tx u_uart_tx (
+        .clk_i       (clk_i),
+        .reset_i     (reset_i),
+        .osr_tick_i  (osr_tick),
+        .tx_en_i     (config_grp.TX_EN),
+        .tx_clr_ovrn_i(config_grp.TX_CLR_OVRN),
+        .reg_we_i    (reg_we_i),
+        .reg_waddr_i (reg_waddr_i),
+        .reg_wdata_i (reg_wdata_i),
+        .tx_busy_o   (status_grp.TX_BUSY),
+        .tx_ovrn_o   (status_grp.TX_OVRN),
+        .tx_lvl_o    (status_grp.TX_LVL),
+        .tx_data_o   (tx_data_o)
     );
 
 endmodule

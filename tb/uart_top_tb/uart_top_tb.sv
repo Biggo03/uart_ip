@@ -27,7 +27,6 @@ module uart_top_tb;
     // ------------------------------------------------------------
     localparam real CLK_PERIOD_NS = 13.333; // 75 MHz
     localparam int  BAUD_DIV      = 8;      // small divisor for faster sim
-
     // ------------------------------------------------------------
     // DUT signals
     // ------------------------------------------------------------
@@ -43,6 +42,13 @@ module uart_top_tb;
 
     logic [4:0]  reg_raddr_i;
     logic [31:0] reg_rdata_o;
+
+    // ------------------------------------------------------------
+    // Sequence
+    // ------------------------------------------------------------
+    logic [7:0] seq   [23:0];
+    int         seq_read_ptr;
+    int         seq_write_ptr;
 
     // ------------------------------------------------------------
     // Loopback
@@ -76,12 +82,21 @@ module uart_top_tb;
     initial begin
         dump_setup();
 
-        // Default values
+        // Default DUT values
         reset_i     = 1'b1;
         reg_we_i    = 1'b0;
         reg_waddr_i = '0;
         reg_wdata_i = '0;
         reg_raddr_i = '0;
+
+        // Default TB signals
+        seq_read_ptr = 0;
+        seq_write_ptr = 0;
+
+        // Sequence initialization
+        for (int i=0; i < 24; i++) begin
+            seq[i] = $urandom();
+        end
 
         // Hold reset
         repeat (5) @(posedge clk_i);
@@ -93,10 +108,17 @@ module uart_top_tb;
         // Enable TX and RX
         reg_write(`UART_UART_CFG_ADDR, 32'h5); // TX_EN=1, RX_EN=1
 
-        // Loopback a few bytes
-        loopback_byte(8'hA5);
-        loopback_byte(8'h3C);
-        loopback_byte(8'h5A);
+        // Loopback a few bytes (write multiple before reading)
+        loopback_bytes(3);
+
+        // Interleaved write/read seq:
+        // 4 writes, read 2, write 4 more, then read all remaining
+        write_tx_bytes(4);
+        repeat(10000)@(posedge clk_i);
+        read_and_check_bytes(2);
+        write_tx_bytes(4);
+        read_and_check_bytes(2);
+        read_and_check_bytes(4);
 
         repeat (50) @(posedge clk_i);
         tb_report();
@@ -128,7 +150,6 @@ module uart_top_tb;
     begin
         @(negedge clk_i);
         reg_raddr_i = addr;
-        @(posedge clk_i);
         #1;
         data = reg_rdata_o;
     end
@@ -140,25 +161,49 @@ module uart_top_tb;
         status = '0;
         while (status[0] == 1'b0) begin
             reg_read(`UART_UART_STATUS_ADDR, status);
+            $display("Polling RX_VALID: %0b", status[0]);
+            repeat(10)@(posedge clk_i);
         end
     end
     endtask
 
-    task automatic loopback_byte(
-        input logic [7:0] tx_byte
+    task automatic write_tx_bytes(
+        input int unsigned count
     );
-        logic [31:0] rx_word;
     begin
-        // Write TX data
-        reg_write(`UART_TX_DATA_ADDR, {24'h0, tx_byte});
+        for (int i = 0; i < count; i++) begin
+            reg_write(`UART_TX_DATA_ADDR, {24'h0, seq[seq_write_ptr]});
+            seq_write_ptr++;
+        end
+    end
+    endtask
 
-        // Wait for RX FIFO to have data
-        wait_rx_valid();
+    task automatic read_and_check_bytes(
+        input int unsigned count
+    );
+    begin
+        for (int i = 0; i < count; i++) begin
+            logic [31:0] rx_word;
 
-        // Read RX data (also pops FIFO)
-        reg_read(`UART_RX_DATA_ADDR, rx_word);
-        assert (rx_word[7:0] == tx_byte)
-            else tb_error($sformatf("Loopback mismatch. Expected 0x%0h, got 0x%0h", tx_byte, rx_word[7:0]));
+            // Wait for RX FIFO to have data
+            wait_rx_valid();
+
+            // Read RX data (also pops FIFO)
+            reg_read(`UART_RX_DATA_ADDR, rx_word);
+            assert (rx_word[7:0] == seq[seq_read_ptr])
+                else tb_error($sformatf("Loopback mismatch. Expected 0x%0h, got 0x%0h", seq[seq_read_ptr], rx_word[7:0]));
+
+            seq_read_ptr++;
+        end
+    end
+    endtask
+
+    task automatic loopback_bytes(
+        input int unsigned count
+    );
+    begin
+        write_tx_bytes(count);
+        read_and_check_bytes(count);
     end
     endtask
 

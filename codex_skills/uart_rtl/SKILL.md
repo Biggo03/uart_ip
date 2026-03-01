@@ -25,11 +25,14 @@ Use this guidance when editing or adding RTL in `rtl/`.
 - Inputs `*_i`, outputs `*_o`, registered signals `*_r`, no `_w` suffix for wires.
 - Use `always_ff` / `always_comb` and `typedef enum logic` + `unique case` for FSMs.
 - Assign constants with width-safe literals: use `<= 'd0` for vectors/regs that should zero with their declared width, and `<= 1'b0` for single-bit signals.
+- Keep derived constants as `localparam` inside the module body (not in the parameter list). Do not override `localparam` values in instantiations.
 
 **Integration**
 - If you add/rename RTL, update `filelists/*.f` (especially `filelists/uart_top.f`).
 - If interfaces or hierarchy change, update `docs/` as needed.
 - If a module’s ports change, update every RTL module that instantiates it to match the new port list.
+- For status/reg structs, prefer wiring module outputs directly to struct fields at the port connection instead of adding glue logic.
+- Wrapper modules like `uart_rx`/`uart_tx` should not import `uart_reg_pkg`; pass required control/status signals from `uart_top.sv` as plain ports.
 
 **File Header Format**
 - Add a header to the top of each hand-written RTL file.

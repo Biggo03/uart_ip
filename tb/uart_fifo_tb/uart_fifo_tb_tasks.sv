@@ -65,15 +65,15 @@ task automatic read();
     logic             expected_valid;
 begin
     setup_read(1'b0, expected_read_data, expected_valid);
+    #1;
+    if (expected_valid == 1) begin
+        assert (expected_read_data == rdata_o) else tb_error("read error");
+    end
     @(posedge clk_i);
     #1;
     ren_i = 0;
 
-    if (expected_valid == 1) begin
-        assert (expected_read_data == rdata_o && valid_o == 1'b1) else tb_error("read error");
-    end else begin
-        assert (valid_o == 1'b0) else tb_error("read incorrectly valid");
-    end
+    assert (valid_o == (running_lvl != 0)) else tb_error("read incorrectly valid");
     assert_flags();
 end
 endtask
@@ -97,16 +97,16 @@ begin
             setup_read(empty_write, expected_read_data, expected_valid);
         end
     join
+    #1;
+    if (expected_valid == 1) begin
+        assert (expected_read_data == rdata_o) else tb_error("read error");
+    end
     @(posedge clk_i);
     #1;
     ren_i = 0;
     wen_i = 0;
 
-    if (expected_valid == 1) begin
-        assert (expected_read_data == rdata_o && valid_o == 1'b1) else tb_error("read error");
-    end else begin
-        assert (valid_o == 1'b0) else tb_error("read incorrectly valid");
-    end
+    assert (valid_o == (running_lvl != 0)) else tb_error("read incorrectly valid");
     assert_flags();
 
     assert (ovrn_o == expected_ovrn) else tb_error("ovrn error");

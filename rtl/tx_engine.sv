@@ -14,7 +14,7 @@
 //
 //  Parameters:   OSR
 //
-//  Notes:        
+//  Notes:
 //==============================================================//
 `timescale 1ns/1ps
 
@@ -29,7 +29,6 @@ module tx_engine #(
     input wire       osr_tick_i,
 
     // FIFO
-    input wire       tx_fifo_empty_i,
     input wire       tx_fifo_valid_i,
     input wire [7:0] tx_fifo_data_i,
 
@@ -76,7 +75,7 @@ module tx_engine #(
             unique case (tx_state_r)
                 IDLE:
                 begin
-                    if (tx_en_i && ~tx_fifo_empty_i) begin
+                    if (tx_en_i && tx_fifo_valid_i) begin
                         tx_state_r    <= FETCH;
                         tx_busy_o     <= 1'b1;
                         tx_fifo_ren_o <= 1'b1;
@@ -86,11 +85,9 @@ module tx_engine #(
                 FETCH:
                 begin
                     tx_fifo_ren_o <= 1'b0;
-                    if (tx_fifo_valid_i) begin
-                        transmit_byte_r <= tx_fifo_data_i;
-                        tx_state_r      <= SEND;
-                        transmit_en_r   <= 1'b1;
-                    end
+                    transmit_byte_r <= tx_fifo_data_i;
+                    tx_state_r      <= SEND;
+                    transmit_en_r   <= 1'b1;
                 end
 
                 SEND:

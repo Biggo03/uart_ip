@@ -14,15 +14,13 @@
 //
 //  Parameters:   WIDTH, DEPTH, ADDR_W
 //
-//  Notes:        - ADDR_W uses $clog2(DEPTH-1); lvl_o is sized to reach DEPTH.
+//  Notes:
 //==============================================================//
 `timescale 1ns/1ps
 
 module uart_fifo #(
     parameter int WIDTH = 8,
-    parameter int DEPTH = 16,
-
-    localparam int ADDR_W = $clog2(DEPTH-1)
+    parameter int DEPTH = 16
 ) (
     input  wire             clk_i,
     input  wire             reset_i,
@@ -31,13 +29,13 @@ module uart_fifo #(
     input  wire             wen_i,
 
     input  wire             ren_i,
-    output reg [WIDTH-1:0]  rdata_o,
+    output wire [WIDTH-1:0] rdata_o,
 
     input wire              clr_ovrn_i,
     output reg              ovrn_o,
 
-    output reg [ADDR_W:0]   lvl_o, // Needs to be able to reach DEPTH, not DEPTH-1
-    output reg              valid_o,
+    output reg [$clog2(DEPTH):0]   lvl_o, // Needs to be able to reach DEPTH, not DEPTH-1
+    output wire             valid_o,
 
     output wire             almost_empty_o,
     output wire             empty_o,
@@ -45,6 +43,8 @@ module uart_fifo #(
     output wire             almost_full_o,
     output wire             full_o
 );
+
+    localparam int ADDR_W = $clog2(DEPTH);
 
     reg [ADDR_W-1:0] write_ptr_r;
     reg [ADDR_W-1:0] read_ptr_r;
@@ -72,13 +72,8 @@ module uart_fifo #(
 
             // read logic
             if (ren_i && ~empty_o) begin : read_logic
-                rdata_o <= fifo_data_r[read_ptr_r];
-                valid_o <= 1'b1;
-
                 if (read_ptr_r == DEPTH-1) read_ptr_r <= 0;
                 else                       read_ptr_r <= read_ptr_r + 1;
-            end else begin
-                valid_o <= 1'b0;
             end
 
             // overrun logic
@@ -95,10 +90,14 @@ module uart_fifo #(
     end
 
     // Boolean Flags
+    assign valid_o        = ~empty_o;
     assign almost_empty_o = (lvl_o == 1);
     assign empty_o        = (lvl_o == 0);
 
     assign almost_full_o = (lvl_o == DEPTH-1);
     assign full_o        = (lvl_o == DEPTH);
+
+    // read data
+    assign rdata_o = fifo_data_r[read_ptr_r];
 
 endmodule
