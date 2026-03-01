@@ -21,18 +21,18 @@
 module rx_engine #(
     parameter int OSR=16
 ) (
-    // clk and reset
+    // -- clk and reset --
     input wire        clk_i,
     input wire        reset_i,
 
-    // Baud
+    // -- Baud --
     input wire        osr_tick_i,
 
-    // FIFO
+    // -- FIFO --
     output reg  [7:0] rx_fifo_data_o,
     output reg        rx_fifo_wen_o,
 
-    // Rx status and data
+    // -- Rx status and data --
     input wire        recieve_bit_i,
     input wire        rx_en_i,
 

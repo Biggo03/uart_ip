@@ -21,20 +21,20 @@
 module tx_engine #(
     parameter int OSR = 16 // Needs to be known for internal counter
 ) (
-    // clk and reset
+    // -- clk and reset --
     input wire       clk_i,
     input wire       reset_i,
 
-    // Baud
+    // -- Baud --
     input wire       osr_tick_i,
 
-    // FIFO
+    // -- FIFO --
     input wire       tx_fifo_valid_i,
     input wire [7:0] tx_fifo_data_i,
 
     output reg       tx_fifo_ren_o,
 
-    // Tx status and data
+    // -- Tx status and data --
     input wire       tx_en_i,
 
     output reg       tx_busy_o,

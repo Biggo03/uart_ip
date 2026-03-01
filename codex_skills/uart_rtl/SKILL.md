@@ -26,6 +26,8 @@ Use this guidance when editing or adding RTL in `rtl/`.
 - Use `always_ff` / `always_comb` and `typedef enum logic` + `unique case` for FSMs.
 - Assign constants with width-safe literals: use `<= 'd0` for vectors/regs that should zero with their declared width, and `<= 1'b0` for single-bit signals.
 - Keep derived constants as `localparam` inside the module body (not in the parameter list). Do not override `localparam` values in instantiations.
+- For module port section headers and instantiation connection section headers, use the exact style `// -- <header> --`.
+- Instantiation section headers must match the instantiated module’s port section headers (same text and order).
 
 **Integration**
 - If you add/rename RTL, update `filelists/*.f` (especially `filelists/uart_top.f`).
@@ -69,3 +71,4 @@ Use this guidance when editing or adding RTL in `rtl/`.
 **Tests**
 - Tests run on Icarus Verilog via `scripts/run_test.sh`.
 - Update or add testbenches in `tb/` when behavior changes.
+- After any RTL change, run an `iverilog` compilation sanity check for the affected hierarchy (at minimum) before finishing.

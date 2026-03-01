@@ -1,5 +1,6 @@
 ${PROJ_ROOT}/rtl/generated/uart_reg_package.sv
 ${PROJ_ROOT}/rtl/generated/uart_regfile.sv
+${PROJ_ROOT}/rtl/uart_reg_interface.sv
 ${PROJ_ROOT}/rtl/baud_from_osr.sv
 ${PROJ_ROOT}/rtl/baud_gen.sv
 ${PROJ_ROOT}/rtl/uart_fifo.sv

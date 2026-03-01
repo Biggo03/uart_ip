@@ -17,19 +17,21 @@
 //  Notes:
 //==============================================================//
 `timescale 1ns/1ps
-`include "uart_reg_macros.sv"
 module uart_rx (
+    // -- clk and reset --
     input wire        clk_i,
     input wire        reset_i,
 
+    // -- Baud and serial input --
     input wire        osr_tick_i,
     input wire        rx_data_i,
 
+    // -- RX control --
     input wire        rx_en_i,
     input wire        rx_clr_ovrn_i,
+    input wire        rx_fifo_ren_i,
 
-    input wire [4:0]  reg_raddr_i,
-
+    // -- RX status and data --
     output wire       rx_busy_o,
     output wire       rx_ovrn_o,
     output wire [4:0] rx_lvl_o,
@@ -40,16 +42,20 @@ module uart_rx (
     // RX FIFO signals
     wire [7:0] rx_fifo_wdata;
     wire       rx_fifo_wen;
-    wire       rx_fifo_ren;
-
-    assign rx_fifo_ren = (reg_raddr_i == `UART_RX_DATA_ADDR);
 
     rx_engine u_rx_engine (
+        // -- clk and reset --
         .clk_i          (clk_i),
         .reset_i        (reset_i),
+
+        // -- Baud --
         .osr_tick_i     (osr_tick_i),
+
+        // -- FIFO --
         .rx_fifo_data_o (rx_fifo_wdata),
         .rx_fifo_wen_o  (rx_fifo_wen),
+
+        // -- Rx status and data --
         .recieve_bit_i  (rx_data_i),
         .rx_en_i        (rx_en_i),
         .rx_busy_o      (rx_busy_o)
@@ -63,7 +69,7 @@ module uart_rx (
         .reset_i         (reset_i),
         .wdata_i         (rx_fifo_wdata),
         .wen_i           (rx_fifo_wen),
-        .ren_i           (rx_fifo_ren),
+        .ren_i           (rx_fifo_ren_i),
         .rdata_o         (rx_data_o),
         .clr_ovrn_i      (rx_clr_ovrn_i),
         .ovrn_o          (rx_ovrn_o),

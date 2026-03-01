@@ -11,6 +11,9 @@ Use this guidance when creating or updating SystemVerilog testbenches for this r
 - Simulator: Icarus Verilog only.
 - Prefer straightforward directed tests; avoid complex class-based or constrained-random frameworks.
 - Run via `scripts/run_test.sh`.
+- Run tests from the repo root using:
+  `PROJ_ROOT=$(pwd) scripts/run_test.sh <filelist> <tb_file> ./outputs`
+- Always dump test outputs to `./outputs` (do not use other output directories).
 - Do not edit `tb/generated/` files; apply this guidance only to hand-written TBs (typically `tb/*_tb/`).
 
 **Reference Testbenches**

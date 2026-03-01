@@ -36,12 +36,14 @@ module uart_top_tb;
     logic        rx_data_i;
     logic        tx_data_o;
 
-    logic        reg_we_i;
-    logic [4:0]  reg_waddr_i;
-    logic [31:0] reg_wdata_i;
-
-    logic [4:0]  reg_raddr_i;
-    logic [31:0] reg_rdata_o;
+    logic        psel_i;
+    logic        penable_i;
+    logic        pwrite_i;
+    logic [4:0]  paddr_i;
+    logic [31:0] pwdata_i;
+    logic [31:0] prdata_o;
+    logic        pready_o;
+    logic        pslverr_o;
 
     // ------------------------------------------------------------
     // Sequence
@@ -63,11 +65,14 @@ module uart_top_tb;
         .reset_i     (reset_i),
         .rx_data_i   (rx_data_i),
         .tx_data_o   (tx_data_o),
-        .reg_we_i    (reg_we_i),
-        .reg_waddr_i (reg_waddr_i),
-        .reg_wdata_i (reg_wdata_i),
-        .reg_raddr_i (reg_raddr_i),
-        .reg_rdata_o (reg_rdata_o)
+        .psel_i      (psel_i),
+        .penable_i   (penable_i),
+        .pwrite_i    (pwrite_i),
+        .paddr_i     (paddr_i),
+        .pwdata_i    (pwdata_i),
+        .prdata_o    (prdata_o),
+        .pready_o    (pready_o),
+        .pslverr_o   (pslverr_o)
     );
 
     // ------------------------------------------------------------
@@ -84,10 +89,11 @@ module uart_top_tb;
 
         // Default DUT values
         reset_i     = 1'b1;
-        reg_we_i    = 1'b0;
-        reg_waddr_i = '0;
-        reg_wdata_i = '0;
-        reg_raddr_i = '0;
+        psel_i      = 1'b0;
+        penable_i   = 1'b0;
+        pwrite_i    = 1'b0;
+        paddr_i     = '0;
+        pwdata_i    = '0;
 
         // Default TB signals
         seq_read_ptr = 0;
@@ -133,13 +139,32 @@ module uart_top_tb;
         input logic [31:0] data
     );
     begin
-        @(negedge clk_i);
-        reg_waddr_i = addr;
-        reg_wdata_i = data;
-        reg_we_i    = 1'b1;
+        // APB setup phase
         @(posedge clk_i);
-        #1;
-        reg_we_i    = 1'b0;
+        psel_i    <= 1'b1;
+        penable_i <= 1'b0;
+        pwrite_i  <= 1'b1;
+        paddr_i   <= addr;
+        pwdata_i  <= data;
+
+        // APB access phase
+        @(posedge clk_i);
+        penable_i <= 1'b1;
+
+        // Complete transfer (no wait states expected)
+        @(posedge clk_i);
+        if (pready_o !== 1'b1) begin
+            tb_error("APB write expected pready_o=1");
+        end
+        if (pslverr_o !== 1'b0) begin
+            tb_error($sformatf("Unexpected APB PSLVERR on write addr 0x%0h", addr));
+        end
+
+        psel_i    <= 1'b0;
+        penable_i <= 1'b0;
+        pwrite_i  <= 1'b0;
+        paddr_i   <= '0;
+        pwdata_i  <= '0;
     end
     endtask
 
@@ -148,10 +173,31 @@ module uart_top_tb;
         output logic [31:0] data
     );
     begin
-        @(negedge clk_i);
-        reg_raddr_i = addr;
-        #1;
-        data = reg_rdata_o;
+        // APB setup phase
+        @(posedge clk_i);
+        psel_i    <= 1'b1;
+        penable_i <= 1'b0;
+        pwrite_i  <= 1'b0;
+        paddr_i   <= addr;
+
+        // APB access phase
+        @(posedge clk_i);
+        penable_i <= 1'b1;
+
+        // Capture read data
+        @(posedge clk_i);
+        if (pready_o !== 1'b1) begin
+            tb_error("APB read expected pready_o=1");
+        end
+        if (pslverr_o !== 1'b0) begin
+            tb_error($sformatf("Unexpected APB PSLVERR on read addr 0x%0h", addr));
+        end
+        data = prdata_o;
+
+        psel_i    <= 1'b0;
+        penable_i <= 1'b0;
+        pwrite_i  <= 1'b0;
+        paddr_i   <= '0;
     end
     endtask
 

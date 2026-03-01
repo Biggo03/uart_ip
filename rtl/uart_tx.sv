@@ -17,20 +17,21 @@
 //  Notes:
 //==============================================================//
 `timescale 1ns/1ps
-`include "uart_reg_macros.sv"
 module uart_tx (
+    // -- clk and reset --
     input wire        clk_i,
     input wire        reset_i,
 
+    // -- Baud --
     input wire        osr_tick_i,
 
+    // -- TX control and FIFO write input --
     input wire        tx_en_i,
     input wire        tx_clr_ovrn_i,
+    input wire        tx_fifo_wen_i,
+    input wire [7:0]  tx_fifo_wdata_i,
 
-    input wire        reg_we_i,
-    input wire [4:0]  reg_waddr_i,
-    input wire [31:0] reg_wdata_i,
-
+    // -- TX status and serial output --
     output wire       tx_busy_o,
     output wire       tx_ovrn_o,
     output wire [4:0] tx_lvl_o,
@@ -38,22 +39,24 @@ module uart_tx (
 );
 
     // TX FIFO signals
-    wire [7:0] tx_fifo_wdata;
-    wire       tx_fifo_wen;
     wire       tx_fifo_ren;
     wire [7:0] tx_fifo_rdata;
     wire       tx_fifo_valid;
 
-    assign tx_fifo_wen   = reg_we_i && (reg_waddr_i == `UART_TX_DATA_ADDR);
-    assign tx_fifo_wdata = reg_wdata_i[7:0];
-
     tx_engine u_tx_engine (
+        // -- clk and reset --
         .clk_i           (clk_i),
         .reset_i         (reset_i),
+
+        // -- Baud --
         .osr_tick_i      (osr_tick_i),
+
+        // -- FIFO --
         .tx_fifo_valid_i (tx_fifo_valid),
         .tx_fifo_data_i  (tx_fifo_rdata),
         .tx_fifo_ren_o   (tx_fifo_ren),
+
+        // -- Tx status and data --
         .tx_en_i         (tx_en_i),
         .tx_busy_o       (tx_busy_o),
         .transmit_bit_o  (tx_data_o)
@@ -65,8 +68,8 @@ module uart_tx (
     ) u_tx_fifo (
         .clk_i           (clk_i),
         .reset_i         (reset_i),
-        .wdata_i         (tx_fifo_wdata),
-        .wen_i           (tx_fifo_wen),
+        .wdata_i         (tx_fifo_wdata_i),
+        .wen_i           (tx_fifo_wen_i),
         .ren_i           (tx_fifo_ren),
         .rdata_o         (tx_fifo_rdata),
         .clr_ovrn_i      (tx_clr_ovrn_i),
