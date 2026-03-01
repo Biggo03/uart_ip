@@ -159,6 +159,7 @@ module uart_top_tb;
         if (pslverr_o !== 1'b0) begin
             tb_error($sformatf("Unexpected APB PSLVERR on write addr 0x%0h", addr));
         end
+        $display("[%0t] APB WRITE complete: addr=0x%0h data=0x%08h", $time, addr, data);
 
         psel_i    <= 1'b0;
         penable_i <= 1'b0;
@@ -193,6 +194,7 @@ module uart_top_tb;
             tb_error($sformatf("Unexpected APB PSLVERR on read addr 0x%0h", addr));
         end
         data = prdata_o;
+        $display("[%0t] APB READ complete: addr=0x%0h data=0x%08h", $time, addr, data);
 
         psel_i    <= 1'b0;
         penable_i <= 1'b0;
