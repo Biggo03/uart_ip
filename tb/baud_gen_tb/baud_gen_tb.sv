@@ -12,7 +12,7 @@
 //  Project:      uart_ip
 //  Repository:   https://github.com/Biggo03/uart_ip
 //
-//  Parameters:   OSR, DIV_W
+//  Parameters:   DIV_W
 //
 //  Notes:        - Uses common.sv dump_setup for VCD generation.
 //==============================================================//
@@ -24,7 +24,6 @@ module baud_gen_tb;
     // --------------------------------------------------
     // Parameters
     // --------------------------------------------------
-    localparam int OSR   = 16;
     localparam int DIV_W = 8;
 
     // --------------------------------------------------
@@ -40,7 +39,6 @@ module baud_gen_tb;
     // DUT instantiation
     // --------------------------------------------------
     baud_gen #(
-        .OSR   (OSR),
         .DIV_W (DIV_W)
     ) dut (
         .clk_i      (clk_i),
@@ -70,6 +68,7 @@ module baud_gen_tb;
 
         full_test(4, 2);
 
+        tb_report();
         $finish();
     end
 
@@ -85,14 +84,14 @@ begin
 
     repeat(div)@(posedge clk_i);
     #1;
-    assert (osr_tick_o == 1'b0) else $error("[%0t] tick high when disabled", $realtime());
+    assert (osr_tick_o == 1'b0) else tb_error($sformatf("[%0t] tick high when disabled", $realtime()));
 
     en_i = 1'b1;
 
     for (int i=0; i < repetitions; i++) begin
         repeat(div)@(posedge clk_i);
         #1;
-        assert (osr_tick_o == 1'b1) else $error("[%0t] tick unexpectedly low", $realtime());
+        assert (osr_tick_o == 1'b1) else tb_error($sformatf("[%0t] tick unexpectedly low", $realtime()));
     end
 
     repeat(div-1)@(posedge clk_i);
@@ -100,14 +99,14 @@ begin
 
     @(posedge clk_i);
     #1;
-    assert (osr_tick_o == 1'b0) else $error("[%0t] tick high on disable transition", $realtime());
+    assert (osr_tick_o == 1'b0) else tb_error($sformatf("[%0t] tick high on disable transition", $realtime()));
 
     en_i = 1'b1;
     repeat(div-1)@(posedge clk_i);
     div_i = div + 1;
     @(posedge clk_i);
     #1;
-    assert (osr_tick_o == 1'b0) else $error("[%0t] tick high on div_i change", $realtime());
+    assert (osr_tick_o == 1'b0) else tb_error($sformatf("[%0t] tick high on div_i change", $realtime()));
 
     reset_i = 1'b1;
     @(posedge clk_i);

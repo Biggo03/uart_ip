@@ -99,6 +99,7 @@ module uart_top_tb;
         loopback_byte(8'h5A);
 
         repeat (50) @(posedge clk_i);
+        tb_report();
         $finish;
     end
 
@@ -157,7 +158,7 @@ module uart_top_tb;
         // Read RX data (also pops FIFO)
         reg_read(`UART_RX_DATA_ADDR, rx_word);
         assert (rx_word[7:0] == tx_byte)
-            else $error("Loopback mismatch. Expected 0x%0h, got 0x%0h", tx_byte, rx_word[7:0]);
+            else tb_error($sformatf("Loopback mismatch. Expected 0x%0h, got 0x%0h", tx_byte, rx_word[7:0]));
     end
     endtask
 

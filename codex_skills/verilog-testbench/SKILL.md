@@ -35,8 +35,10 @@ Use this guidance when creating or updating SystemVerilog testbenches for this r
 
 **Stimulus and Checks**
 - Use simple `task automatic` blocks for stimulus and reuse (reg read/write, wait helpers, etc.).
-- Use `assert` with `$error` for checks; keep checks close to stimulus. Plain `if (...) $error` is acceptable for simple cases.
+- Use `assert` with `tb_error()` for checks; keep checks close to stimulus. Plain `if (...) tb_error(...)` is acceptable for simple cases.
 - Top-level TBs that access MMIO should include `uart_reg_macros.sv` and implement `reg_write`/`reg_read` tasks.
+- All tests must end with a terminal message: print `TEST PASSED` on success and `TEST FAILED` on any error.
+- Use `tb_error()` to record failures and call `tb_report()` right before `$finish`.
 
 **Naming and File Layout**
 - Keep file naming consistent: `tb/<block>_tb/<block>_tb.sv` and optional `tb/<block>_tb/<block>_tb_tasks.sv`.

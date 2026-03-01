@@ -120,6 +120,7 @@ module tx_engine_tb;
         test_tx(8'b01010101);
 
         repeat (100) @(posedge clk_i);
+        tb_report();
         $finish;
     end
 
@@ -134,34 +135,34 @@ begin
 
     @(posedge clk_i);
     #1;
-    assert (~tx_busy_o) else $error("[%t] busy asserted in IDLE", $realtime());
+    assert (~tx_busy_o) else tb_error($sformatf("[%t] busy asserted in IDLE", $realtime()));
 
     tx_fifo_empty_i = 1'b0;
     @(posedge clk_i);
     #1;
-    assert(tx_busy_o && tx_fifo_ren_o) else $error("[%t] transition to FETCH failed", $realtime());
+    assert(tx_busy_o && tx_fifo_ren_o) else tb_error($sformatf("[%t] transition to FETCH failed", $realtime()));
     tx_fifo_valid_i = 1'b1;
 
     @(posedge clk_i);
     #1;
-    assert(~tx_fifo_ren_o) else $error("[%t] Transition to SEND failed", $realtime());
+    assert(~tx_fifo_ren_o) else tb_error($sformatf("[%t] Transition to SEND failed", $realtime()));
 
     wait_for_baud_tick();
     @(posedge clk_i);
     #1;
-    assert (~transmit_bit_o) else $error("[%t] Start bit not low", $realtime());
+    assert (~transmit_bit_o) else tb_error($sformatf("[%t] Start bit not low", $realtime()));
 
     for (int i = 0; i < 8; i++) begin
         wait_for_baud_tick();
         @(posedge clk_i);
         #1;
-        assert (transmit_bit_o == exp_tx_fifo_data[i]) else $error("[%t] Transmit error on bit %d", $realtime(), i);
+        assert (transmit_bit_o == exp_tx_fifo_data[i]) else tb_error($sformatf("[%t] Transmit error on bit %d", $realtime(), i));
     end
 
     wait_for_baud_tick();
     @(posedge clk_i);
     #1;
-    assert (transmit_bit_o == 1'b1) else $error("[%t] Stop bit error", $realtime());
+    assert (transmit_bit_o == 1'b1) else tb_error($sformatf("[%t] Stop bit error", $realtime()));
 
     wait(~tx_busy_o);
 
@@ -176,7 +177,7 @@ begin
         @(posedge clk_i);
         #1;
     end
-    assert(u_dut.baud_tick_r) else $error("[%t] baud tick not high as expected", $realtime());
+    assert(u_dut.baud_tick_r) else tb_error($sformatf("[%t] baud tick not high as expected", $realtime()));
 end
 endtask;
 

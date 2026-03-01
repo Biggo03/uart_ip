@@ -106,6 +106,7 @@ module rx_engine_tb;
         $display("reset complete");
 
         test_rx();
+        tb_report();
         $finish();
     end
 
@@ -153,7 +154,7 @@ begin
     for (int i=0; i < 8; i++) begin
         recieve_bit_i = exp_rx_data[i];
         wait_for_osr_ticks(OSR);
-        assert (rx_fifo_data_o[i] == exp_rx_data[i]) else $error("recieved data error on bit %0d\nExpected: %0b\nActual: %0b", i, exp_rx_data[i], rx_fifo_data_o[i]);
+        assert (rx_fifo_data_o[i] == exp_rx_data[i]) else tb_error($sformatf("recieved data error on bit %0d\nExpected: %0b\nActual: %0b", i, exp_rx_data[i], rx_fifo_data_o[i]));
     end
     $display("Frame recieved");
 end

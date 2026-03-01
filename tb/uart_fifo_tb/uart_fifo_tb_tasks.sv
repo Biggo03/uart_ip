@@ -31,7 +31,7 @@ begin
     wen_i = 0;
     assert_flags();
 
-    assert (ovrn_o == expected_ovrn) else $error("ovrn error");
+    assert (ovrn_o == expected_ovrn) else tb_error("ovrn error");
 end
 endtask
 
@@ -70,9 +70,9 @@ begin
     ren_i = 0;
 
     if (expected_valid == 1) begin
-        assert (expected_read_data == rdata_o && valid_o == 1'b1) else $error ("read error");
+        assert (expected_read_data == rdata_o && valid_o == 1'b1) else tb_error("read error");
     end else begin
-        assert (valid_o == 1'b0) else $error("read incorrectly valid");
+        assert (valid_o == 1'b0) else tb_error("read incorrectly valid");
     end
     assert_flags();
 end
@@ -103,13 +103,13 @@ begin
     wen_i = 0;
 
     if (expected_valid == 1) begin
-        assert (expected_read_data == rdata_o && valid_o == 1'b1) else $error ("read error");
+        assert (expected_read_data == rdata_o && valid_o == 1'b1) else tb_error("read error");
     end else begin
-        assert (valid_o == 1'b0) else $error("read incorrectly valid");
+        assert (valid_o == 1'b0) else tb_error("read incorrectly valid");
     end
     assert_flags();
 
-    assert (ovrn_o == expected_ovrn) else $error("ovrn error");
+    assert (ovrn_o == expected_ovrn) else tb_error("ovrn error");
 end
 endtask;
 
@@ -158,7 +158,7 @@ begin
             almost_full_exp == almost_full_o &&
             almost_empty_exp == almost_empty_exp)
     else begin
-        $error("[%t] flag error detected. Expected %s", $realtime() * 1e3, error_string);
+        tb_error($sformatf("[%t] flag error detected. Expected %s", $realtime() * 1e3, error_string));
     end
 end
 endtask;
@@ -172,6 +172,6 @@ begin
 
     // check clear
     expected_ovrn = 1'b0;
-    assert (expected_ovrn == ovrn_o) else $error("[%0t] overrun error", $realtime());
+    assert (expected_ovrn == ovrn_o) else tb_error($sformatf("[%0t] overrun error", $realtime()));
 end
 endtask;

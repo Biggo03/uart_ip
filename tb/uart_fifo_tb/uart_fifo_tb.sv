@@ -172,10 +172,11 @@ module uart_fifo_tb;
         write(24);
         clr_ovrn_i = 1'b0;
 
-        assert (ovrn_o == 1'b1) else $error("overrun cleared on write cycle");
+        assert (ovrn_o == 1'b1) else tb_error("overrun cleared on write cycle");
 
         // Finish simulation
         #100;
+        tb_report();
         $finish;
     end
 
