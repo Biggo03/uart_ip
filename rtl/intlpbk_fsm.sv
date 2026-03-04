@@ -89,6 +89,8 @@ module intlpbk_fsm (
     reg        apb_done_pulse_r;
     reg        apb_err_pulse_r;
     reg [31:0] apb_rdata_r;
+    reg        apb_done_pending_r;
+    reg        apb_err_pending_r;
 
     integer i;
 
@@ -101,6 +103,8 @@ module intlpbk_fsm (
             apb_done_pulse_r <= 1'b0;
             apb_err_pulse_r  <= 1'b0;
             apb_rdata_r      <= 32'h0;
+            apb_done_pending_r <= 1'b0;
+            apb_err_pending_r  <= 1'b0;
 
             psel_o           <= 1'b0;
             penable_o        <= 1'b0;
@@ -108,9 +112,11 @@ module intlpbk_fsm (
             paddr_o          <= 5'h0;
             pwdata_o         <= 32'h0;
         end else begin
-            // One-cycle response pulses
-            apb_done_pulse_r <= 1'b0;
-            apb_err_pulse_r  <= 1'b0;
+            // One-cycle response pulses generated from pending flags.
+            apb_done_pulse_r <= apb_done_pending_r;
+            apb_err_pulse_r  <= apb_err_pending_r;
+            apb_done_pending_r <= 1'b0;
+            apb_err_pending_r  <= 1'b0;
 
             unique case (apb_state_r)
                 A_IDLE:
@@ -131,20 +137,19 @@ module intlpbk_fsm (
 
                 A_SETUP:
                 begin
-                    psel_o      <= 1'b1;
-                    penable_o   <= 1'b0;
+                    psel_o    <= 1'b1;
+                    penable_o <= 1'b1;
                     apb_state_r <= A_ACCESS;
                 end
 
                 A_ACCESS:
                 begin
                     psel_o    <= 1'b1;
-                    penable_o <= 1'b1;
 
                     if (pready_i) begin
                         apb_rdata_r      <= prdata_i;
-                        apb_done_pulse_r <= 1'b1;
-                        apb_err_pulse_r  <= pslverr_i;
+                        apb_done_pending_r <= 1'b1;
+                        apb_err_pending_r  <= pslverr_i;
 
                         psel_o           <= 1'b0;
                         penable_o        <= 1'b0;
