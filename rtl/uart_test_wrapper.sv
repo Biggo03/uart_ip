@@ -1,6 +1,6 @@
 //==============================================================//
-//  Module:       uart_wrapper
-//  File:         uart_wrapper.sv
+//  Module:       uart_test_wrapper
+//  File:         uart_test_wrapper.sv
 //  Description:  UART wrapper with optional internal loopback APB master.
 //
 //                 Key behaviors:
@@ -18,7 +18,7 @@
 //==============================================================//
 `timescale 1ns/1ps
 
-module uart_wrapper (
+module uart_test_wrapper (
     // -- clk and reset --
     input wire        clk_i,
     input wire        reset_i,
@@ -62,6 +62,8 @@ module uart_wrapper (
     wire        uart_pready;
     wire        uart_pslverr;
 
+    wire        uart_rx_data;
+
     wire        use_intlbk_apb;
 
     wire        uart_psel;
@@ -77,6 +79,8 @@ module uart_wrapper (
     assign uart_pwrite  = use_intlbk_apb ? lb_pwrite  : pwrite_i;
     assign uart_paddr   = use_intlbk_apb ? lb_paddr   : paddr_i;
     assign uart_pwdata  = use_intlbk_apb ? lb_pwdata  : pwdata_i;
+
+    assign uart_rx_data = use_intlbk_apb ? tx_data_o : rx_data_i;
 
     // External APB response is blocked while internal loopback owns APB.
     assign prdata_o  = use_intlbk_apb ? 32'h0000_0000 : uart_prdata;
@@ -119,7 +123,7 @@ module uart_wrapper (
         .reset_i            (reset_i),
 
         // -- UART pins --
-        .rx_data_i          (rx_data_i),
+        .rx_data_i          (uart_rx_data),
         .tx_data_o          (tx_data_o),
 
         // -- APB signals --
