@@ -8,4 +8,5 @@ ${PROJ_ROOT}/rtl/rx_engine.sv
 ${PROJ_ROOT}/rtl/tx_engine.sv
 ${PROJ_ROOT}/rtl/uart_rx.sv
 ${PROJ_ROOT}/rtl/uart_tx.sv
+${PROJ_ROOT}/rtl/intlpbk_fsm.sv
 ${PROJ_ROOT}/rtl/uart_top.sv
