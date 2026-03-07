@@ -1,12 +1,12 @@
 //==============================================================//
-//  Module:       uart_test_wrapper
-//  File:         uart_test_wrapper.sv
-//  Description:  UART wrapper with optional internal loopback APB master.
+//  Module:       uart_intlpbk_harness
+//  File:         uart_intlpbk_harness.sv
+//  Description:  UART wrapper dedicated to internal loopback.
 //
 //                 Key behaviors:
 //                   - Instantiates uart_top and intlpbk_fsm
-//                   - Muxes UART APB control between external host and loopback FSM
-//                   - Blocks external APB accesses while loopback FSM owns the bus
+//                   - Drives uart_top APB solely from loopback FSM
+//                   - Hardwires UART TX back to UART RX internally
 //
 //  Author:       Viggo Wozniak
 //  Project:      uart_ip
@@ -18,24 +18,10 @@
 //==============================================================//
 `timescale 1ns/1ps
 
-module uart_test_wrapper (
+module uart_intlpbk_harness (
     // -- clk and reset --
     input wire        clk_i,
     input wire        reset_i,
-
-    // -- UART pins --
-    input wire        rx_data_i,
-    output wire       tx_data_o,
-
-    // -- External APB signals --
-    input wire        psel_i,
-    input wire        penable_i,
-    input wire        pwrite_i,
-    input wire [4:0]  paddr_i,
-    input wire [31:0] pwdata_i,
-    output wire [31:0] prdata_o,
-    output wire       pready_o,
-    output wire       pslverr_o,
 
     // -- Internal loopback control --
     input wire        intlpbk_enable_i,
@@ -62,30 +48,10 @@ module uart_test_wrapper (
     wire        uart_pready;
     wire        uart_pslverr;
 
+    wire        uart_tx_data;
     wire        uart_rx_data;
 
-    wire        use_intlbk_apb;
-
-    wire        uart_psel;
-    wire        uart_penable;
-    wire        uart_pwrite;
-    wire [4:0]  uart_paddr;
-    wire [31:0] uart_pwdata;
-
-    assign use_intlbk_apb = intlpbk_enable_i || intlpbk_busy_o;
-
-    assign uart_psel    = use_intlbk_apb ? lb_psel    : psel_i;
-    assign uart_penable = use_intlbk_apb ? lb_penable : penable_i;
-    assign uart_pwrite  = use_intlbk_apb ? lb_pwrite  : pwrite_i;
-    assign uart_paddr   = use_intlbk_apb ? lb_paddr   : paddr_i;
-    assign uart_pwdata  = use_intlbk_apb ? lb_pwdata  : pwdata_i;
-
-    assign uart_rx_data = use_intlbk_apb ? tx_data_o : rx_data_i;
-
-    // External APB response is blocked while internal loopback owns APB.
-    assign prdata_o  = use_intlbk_apb ? 32'h0000_0000 : uart_prdata;
-    assign pready_o  = use_intlbk_apb ? 1'b1          : uart_pready;
-    assign pslverr_o = use_intlbk_apb ? psel_i        : uart_pslverr;
+    assign uart_rx_data = uart_tx_data;
 
     intlpbk_fsm u_intlpbk_fsm (
         // -- clk and reset --
@@ -124,14 +90,14 @@ module uart_test_wrapper (
 
         // -- UART pins --
         .rx_data_i          (uart_rx_data),
-        .tx_data_o          (tx_data_o),
+        .tx_data_o          (uart_tx_data),
 
         // -- APB signals --
-        .psel_i             (uart_psel),
-        .penable_i          (uart_penable),
-        .pwrite_i           (uart_pwrite),
-        .paddr_i            (uart_paddr),
-        .pwdata_i           (uart_pwdata),
+        .psel_i             (lb_psel),
+        .penable_i          (lb_penable),
+        .pwrite_i           (lb_pwrite),
+        .paddr_i            (lb_paddr),
+        .pwdata_i           (lb_pwdata),
         .prdata_o           (uart_prdata),
         .pready_o           (uart_pready),
         .pslverr_o          (uart_pslverr)

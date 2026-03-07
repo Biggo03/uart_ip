@@ -1,7 +1,7 @@
 //==============================================================//
-//  Module:       uart_wrapper_tb
-//  File:         uart_wrapper_tb.sv
-//  Description:  Testbench for uart_wrapper.
+//  Module:       uart_test_wrapper_tb
+//  File:         uart_test_wrapper_tb.sv
+//  Description:  Testbench for uart_test_wrapper.
 //
 //                 This testbench verifies:
 //                   - External APB pass-through to UART when loopback FSM is idle
@@ -20,7 +20,7 @@
 `include "common.sv"
 `include "uart_reg_macros.sv"
 
-module uart_wrapper_tb;
+module uart_test_wrapper_tb;
 
     // ------------------------------------------------------------
     // Parameters
@@ -69,7 +69,7 @@ module uart_wrapper_tb;
     // ------------------------------------------------------------
     // DUT
     // ------------------------------------------------------------
-    uart_wrapper dut (
+    uart_test_wrapper dut (
         // -- clk and reset --
         .clk_i                    (clk_i),
         .reset_i                  (reset_i),
