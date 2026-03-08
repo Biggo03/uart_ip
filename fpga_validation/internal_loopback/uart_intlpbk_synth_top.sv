@@ -53,6 +53,6 @@ module uart_intlpbk_synth_top (
     );
 
     assign intlpbk_fail_seen_o      = fail_cnt > 0;
-    assign intlpbk_pass_threshold_o = pass_cnt > 1;
+    assign intlpbk_pass_threshold_o = pass_cnt > 8;
 
 endmodule
