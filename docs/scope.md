@@ -1,166 +1,178 @@
 # UART IP Core Scope Document
 
 ## 1. Project Overview
-The goal of this project is to define and implements a modular, reusable, and fully documented UART IP core, intended for integration with a custom RV32I processor as well as standalone FPGA designs.
 
-The design will prioritize:
-- Clean layering
-- Clear register interface
-- High configurability
-- Solid documentation
-- A realistic feature roadmap
+This project implements a modular UART IP core in SystemVerilog for integration into a larger SoC or for standalone FPGA use.
 
-The UART will evolve through incremental versions to maintain clarity and correctness.
+The current repo state should be treated as the V1 baseline:
 
----
+- a working APB-facing UART top level
+- separate TX and RX datapaths
+- shared baud / oversample timing generation
+- generated register collateral
+- simulation testbenches
+- FPGA loopback validation paths, including external loopback bring-up
 
-## 2. Design Outline
+The design continues to emphasize:
 
-### Layered Architecture:
-1. **UART Core**:
-- TX engine
-- RX engine
-- Oversampling logic
-- Baud generator
+- clean layering
+- clear register ownership
+- reusable building blocks
+- documentation that matches the RTL
+- a practical roadmap for future UART features
 
-2. **Register Block**:
-- MMIO-accessible configuration
-- Data registers
-- status tracking
+## 2. Current V1 State
+
+V1 is no longer just a planned feature set. It is the current implemented architecture in this repository.
+
+### V1 Summary
+
+The present UART supports:
+
+- 8N1 transmit and receive
+- integer baud divisor configuration through `BAUDDIV`
+- shared oversample tick generation
+- 16x RX oversampling
+- separate 16-entry TX and RX FIFOs
+- FIFO occupancy and overrun reporting
+- APB register access through a generated regfile
+
+V1 is intended to cover the core UART use case:
+
+- software writes bytes to TX
+- software reads bytes from RX
+- software observes busy / valid / level / overrun status
+- the same top-level core works in simulation and FPGA validation harnesses
+
+### Implemented Top-Level Structure
+
+Current top-level module: `rtl/uart_top.sv`
+
+Integrated blocks:
+
+1. `uart_reg_interface`
+   Bridges APB accesses into the generated register file and converts RX/TX data register accesses into FIFO handshakes.
+2. `baud_gen`
+   Generates the shared `osr_tick` from `BAUDDIV` whenever TX or RX is enabled.
+3. `uart_rx`
+   Wraps `rx_engine` plus the RX FIFO and exposes RX-visible status.
+4. `uart_tx`
+   Wraps the TX FIFO plus `tx_engine` and exposes TX-visible status.
+
+### Current V1 Register Model
+
+The generated register interface currently exposes:
+
+- `UART_CFG`
+  - `TX_EN`
+  - `TX_CLR_OVRN`
+  - `RX_EN`
+  - `RX_CLR_OVRN`
+- `UART_STATUS`
+  - `RX_VALID`
+  - `RX_OVRN`
+  - `RX_LVL`
+  - `RX_BUSY`
+  - `TX_OVRN`
+  - `TX_LVL`
+  - `TX_BUSY`
+- `TX_DATA`
+- `RX_DATA`
+- `BAUD_CFG`
+
+This is the software-visible V1 programming model that the current RTL and validation harnesses depend on.
+
+### Current V1 Datapath Behavior
+
+#### TX path
+
+- software writes `TX_DATA`
+- `uart_reg_interface` generates a TX FIFO write pulse
+- `uart_tx` stores the byte in the TX FIFO
+- `tx_engine` pulls FIFO data and serializes start, data, and stop bits
+
+#### RX path
+
+- `rx_engine` monitors the asynchronous serial input
+- the input is synchronized internally
+- samples are taken using 16x oversample timing
+- a majority vote is used around the bit midpoint
+- valid bytes are pushed into the RX FIFO
+- software reads `RX_DATA` to pop bytes from the FIFO
 
 ### Single Clock Domain
-- Baud ticks generated internally using counters
-- RX input treated as asynchronous and synchronized
 
-### Seperation of Concerns
-- IP core handles protocol/state-machine behaviour
-- Register block handles CPU-visible access patterns, control bits, FIFO's and interrupt conditions
+The current V1 implementation remains single-clock:
 
-### Documentation
-- Clear descriptions of functions, register map, FSMs, timing, and configuration mechanisms
-- Architecture to be readable without RTL
+- all logic runs from the system clock
+- baud timing is derived internally from counters
+- RX serial input is synchronized before use by the receive state machine
 
----
+### Validation State of V1
 
-## 3. Version Roadmap
+The repository already contains V1 validation collateral:
 
-### V1 Features
+- block-level testbenches for FIFO, baud generation, RX engine, and TX engine
+- top-level UART testbench
+- internal loopback harnesses
+- external loopback harnesses
 
-Goal: Implement a stable, functional UART suitable for printf, serial output, and basic data reception.
+External loopback working in the repo is an important milestone because it validates the integrated V1 design beyond isolated simulation.
 
-#### TX Engine
-- 8N1 format (8 data bits, no parity, 1 stop)
-- Start/data/stop sequencing
-- Byte-level shift register
+## 3. V1 Scope Boundaries
 
-#### RX Engine
-- Fixed 16× oversampling
-- Start-bit detection
-- Mid-bit sampling
-- Stop-bit validation
-- Framing error detection
+The following items are intentionally outside the current V1 scope:
 
-#### Baud Generation
-- Integer baud divisor
-- Single clock input (`clk`)
-- OSR tick signal for TX/RX FSMs
+- parity support
+- selectable stop-bit count
+- selectable data width
+- hardware flow control
+- watermark interrupts
+- fractional baud generation
+- autobaud detection
 
-#### FIFOs
-- Generic and configurable
-- full/empty flags
-- overrun flag
+V1 also does not currently expose a dedicated interrupt output interface. The implemented interface is register- and status-driven.
 
-#### Register Block
-Registers accessible by CPU:
-- **TXDATA** (write-only)
-- **RXDATA** (read-only)
-- **STATUS** (TX busy, FIFO status, error bits)
-- **CONTROL** (enable TX/RX)
-- **BAUDDIV** (integer divider)
+## 4. V2 Roadmap
 
-#### Interrupts
-- RX data available interrupt
-- TX FIFO empty interrupt
+V2 is the next feature tier and should remain separate from the V1 baseline described above.
 
-#### V1 Deliverables
-- UART core RTL
-- Register block RTL
-- Documentation:
-  - Architecture overview
-  - FSM descriptions
-  - RX oversampling explanation
-  - Register map
-  - Timing narratives
+### 4.1 Configurable Frame Format
 
----
+- parity: none / odd / even
+- stop bits: 1 or 2
+- data bits: 7 / 8 / 9 (optional)
 
-### V2 Features
+### 4.2 Hardware Flow Control
 
-Goal: Implement features found in professional MCU/SoC UARTs.
+- `RTS` output based on RX FIFO fullness
+- `CTS` input controlling TX engine
+- configurable enable / disable bits
 
-#### 1. Configurable Frame Format
-- Parity: none / odd / even
-- Stop bits: 1 or 2
-- Data bits: 7 / 8 / 9 (optional)
+### 4.3 FIFO Watermark Interrupts
 
-#### 2. Hardware Flow Control
-- **RTS** output based on RX FIFO fullness
-- **CTS** input controlling TX engine
-- Configurable enable/disable bits
+- RX FIFO almost-full interrupt
+- TX FIFO almost-empty interrupt
+- programmable thresholds
 
-#### 3. FIFO Watermark Interrupts
-- RX FIFO “almost full” interrupt
-- TX FIFO “almost empty” interrupt
-- Programmable thresholds
+### 4.4 Extended Error Detection
 
-#### 4. Extended Error Detection
-- Parity error
-- Framing error
-- Break detection
-- Sticky error flags (software clear required)
+- parity error
+- framing error
+- break detection
+- sticky error flags requiring software clear
 
-#### 5. Fractional Baud Rate Generator
-- Higher-precision baud timing
-- Fractional accumulator or M/N-based divisor
-- Improved compatibility with arbitrary system clock frequencies
+### 4.5 Fractional Baud Rate Generator
 
-#### 6. Autobaud Detection
-- Detect baud rate from RX line transitions
-- Determine baud divisor
-- “Autobaud lock” status
-- Timeout/error conditions
-- Manual override via control register
+- higher-precision baud timing
+- fractional accumulator or M/N-based divisor
+- improved compatibility with arbitrary system clock frequencies
 
----
+### 4.6 Autobaud Detection
 
-## 4. Documentation Requirements
-
-The following documents form part of the IP deliverable:
-
-- High-level architecture overview
-- TX and RX state machine descriptions
-- Description of oversampling behavior
-- Baud-generation algorithm and formulas
-- UART register map (V1 & V2)
-- Descriptions of parity, flow control, watermarks, and autobaud
-- Integration notes for software interaction (MMIO usage)
-
----
-
-## 5. Success Criteria
-
-### V1.0 Complete When:
-- UART reliably transmits and receives bytes under 8N1
-- FIFOs operate correctly
-- Error conditions detected
-- Register map stable and documented
-- All V1 features implemented in RTL
-- All V1 documentation complete
-
-### V2.0 Complete When:
-- All parity/stop-bit configurations function correctly
-- Flow control operates without deadlock
-- Watermark interrupts behave per specification
-- Autobaud reliably detects baud rates within tolerance
-- Documentation updated to reflect all V2 features
+- detect baud rate from RX transitions
+- determine baud divisor automatically
+- autobaud lock status
+- timeout and error handling
+- manual override via control register
 
