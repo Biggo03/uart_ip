@@ -33,7 +33,9 @@ module uart_extlpbk_synth_top #(
     // -- Status outputs --
     output wire extlpbk_busy_o,
     output wire extlpbk_error_seen_o,
-    output wire extlpbk_activity_o
+    output wire extlpbk_activity_o,
+
+    output reg debug_led
 );
 
     wire [15:0] echo_count;
